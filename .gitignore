@@ -2,7 +2,6 @@
 .idea/
 db.sqlite3
 users/migrations/__pycache__
-users/migrations/[0-9]*
 library_service/migrations/__pycache__
-library/migrations/[0-9]*
+*/migrations/*
 !*/migrations/__init__.py
