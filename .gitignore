@@ -1,5 +1,8 @@
 .venv/
 .idea/
 db.sqlite3
-*/migrations/*
+users/migrations/__pycache__
+users/migrations/[0-9]*
+library_service/migrations/__pycache__
+library/migrations/[0-9]*
 !*/migrations/__init__.py
