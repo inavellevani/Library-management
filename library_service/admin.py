@@ -1,7 +1,19 @@
 from django.contrib import admin
 from django.db.models import Count
 from users.models import CustomUser
-from .models import Book, Author, Genre, BookBorrowHistory
+from library_service.models import Book, Author, Genre, BookBorrowHistory
+
+
+@admin.register(Author)
+class AuthorAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+
+@admin.register(Genre)
+class GenreAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
 
 
 class BookBorrowHistoryInline(admin.TabularInline):
@@ -9,6 +21,7 @@ class BookBorrowHistoryInline(admin.TabularInline):
     extra = 0
 
 
+@admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
     list_display = ('title', 'author', 'genre', 'publication_date', 'stock_count', 'times_borrowed', 'available_count',
                     'borrowed_count')
@@ -27,8 +40,3 @@ class BookAdmin(admin.ModelAdmin):
     def borrowed_count(self, obj):
         return obj.bookborrowhistory_set.filter(returned_date__isnull=True).count()
     borrowed_count.short_description = 'Borrowed Count'
-
-
-admin.site.register(Book, BookAdmin)
-admin.site.register(Author)
-admin.site.register(Genre)
