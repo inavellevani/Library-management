@@ -3,5 +3,5 @@
 db.sqlite3
 users/migrations/__pycache__
 library_service/migrations/__pycache__
-*/migrations/*
-!*/migrations/__init__.py
+users/migrations
+library_service/migrations
