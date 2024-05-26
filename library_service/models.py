@@ -3,6 +3,10 @@ from django.utils.translation import gettext_lazy as _
 from users.models import CustomUser
 
 
+class Profile(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+
+
 class Author(models.Model):
     name = models.CharField(max_length=100, verbose_name=_('Name'))
     # Add other relevant fields
@@ -20,9 +24,9 @@ class Genre(models.Model):
 
 
 class Book(models.Model):
-    id = models.AutoField(primary_key=True)
     author = models.ForeignKey(Author, on_delete=models.CASCADE, verbose_name=_('Author'))
     genre = models.ManyToManyField(Genre, verbose_name=_('Genre'))
+    id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=200, verbose_name=_('Title'))
     publication_date = models.DateField(verbose_name=_('Publication Date'))
     stock_count = models.PositiveIntegerField(verbose_name=_('Stock Count'))

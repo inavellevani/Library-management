@@ -1,6 +1,4 @@
 from django.contrib import admin
-from django.db.models import Count
-from users.models import CustomUser
 from library_service.models import Book, Author, Genre, BookBorrowHistory
 
 
@@ -23,8 +21,8 @@ class BookBorrowHistoryInline(admin.TabularInline):
 
 @admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
-    list_display = ('title', 'author', 'get_genres', 'publication_date', 'stock_count', 'times_borrowed', 'available_count',
-                    'borrowed_count')
+    list_display = ('title', 'author', 'get_genres', 'publication_date', 'stock_count', 'times_borrowed',
+                    'available_count', 'borrowed_count')
 
     def get_genres(self, obj):
         return ", ".join([genre.name for genre in obj.genre.all()])

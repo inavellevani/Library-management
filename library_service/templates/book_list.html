@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book List</title>
+    <style>
+        /* Style for the user profile button */
+        .user-profile-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Book List</h1>
+
+    <!-- Display each book in the list -->
+    <ul>
+        {% for book in books %}
+            <li>
+                <!-- Display book details -->
+                <h2><a href="{% url 'book-detail' book.pk %}">{{ book.title }}</a></h2>
+                <p><strong>Author:</strong> {{ book.author.name }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <!-- Button to navigate to the user's profile page -->
+    <a href="{% url 'user-profile' %}" class="user-profile-button">Go to User Profile</a>
+
+    <!-- Pagination links -->
+    {% if is_paginated %}
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    {% endif %}
+</body>
+</html>

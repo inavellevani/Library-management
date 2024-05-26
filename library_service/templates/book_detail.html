@@ -1,0 +1,38 @@
+<!-- book_detail.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ book.title }}</title>
+</head>
+<body>
+    <h1>{{ book.title }}</h1>
+    <p><strong>Author:</strong> {{ book.author.name }}</p>
+    <p><strong>Genre:</strong>
+        {% for genre in book.genre.all %}
+            {{ genre.name }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </p>
+    <p><strong>Publication Date:</strong> {{ book.publication_date }}</p>
+    <p><strong>Stock Count:</strong> {{ book.stock_count }}</p>
+
+    <!-- Check if the user has borrowed the book -->
+    {% if user_has_borrowed_book %}
+        <!-- Display cancel reservation button -->
+        <form action="{% url 'book-detail' book.pk %}" method="post">
+            {% csrf_token %}
+            <button type="submit" name="cancel_reservation">Cancel Reservation</button>
+        </form>
+    {% else %}
+        <!-- Display reserve book button if stock count is greater than 0 -->
+        {% if book.stock_count > 0 %}
+            <form action="{% url 'book-detail' book.pk %}" method="post">
+                {% csrf_token %}
+                <button type="submit" name="reserve_book">Reserve Book</button>
+            </form>
+        {% endif %}
+    {% endif %}
+</body>
+</html>

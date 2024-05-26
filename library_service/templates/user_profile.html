@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <script>
+        // Function to navigate back to the profile page after canceling a reservation
+        function goBackToProfile() {
+            window.location.href = "{% url 'user-profile' %}";
+        }
+
+        // Function to refresh the profile page after canceling a reservation
+        function refreshProfile() {
+            window.location.reload();
+        }
+    </script>
+</head>
+<body>
+    <h1>User Profile</h1>
+
+    <h2>Reserved Books</h2>
+
+    {% if reserved_books %}
+        <ul>
+            {% for reservation in reserved_books %}
+                <li>
+                    <!-- Display only the name of the book and provide link to book detail page -->
+                    <h3><a href="{% url 'book-detail' reservation.book.pk %}">{{ reservation.book.title }}</a></h3>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No reserved books found.</p>
+    {% endif %}
+
+    <!-- Button to navigate to the book list -->
+    <a href="{% url 'book-list' %}">Back to Book List</a>
+
+    <!-- Button to log the user out -->
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+</body>
+</html>

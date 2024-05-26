@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from django.views import View
 from users.forms import CustomUserCreationForm, CustomAuthenticationForm
+from django.contrib.auth.models import User
 
 
 class RegisterView(View):
@@ -30,5 +31,8 @@ class LoginView(View):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('book-list-create')  # Change 'home' to your desired redirect URL
+            if user.is_staff:
+                return redirect('book-list-create')  # Redirect staff to book-list-create
+            else:
+                return redirect('user-profile')  # Redirect regular users to book-list
         return render(request, 'login.html', {'form': form})

@@ -23,5 +23,5 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('', lambda request: redirect('login')),
     path('', include('users.urls'), name='users'),
-    path('api/', include('library_service.urls')),
+    path('', include('library_service.urls')),
 ]
