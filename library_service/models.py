@@ -20,11 +20,16 @@ class Genre(models.Model):
 
 
 class Book(models.Model):
+    id = models.AutoField(primary_key=True)
     author = models.ForeignKey(Author, on_delete=models.CASCADE, verbose_name=_('Author'))
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE, verbose_name=_('Genre'))
+    genre = models.ManyToManyField(Genre, verbose_name=_('Genre'))
     title = models.CharField(max_length=200, verbose_name=_('Title'))
     publication_date = models.DateField(verbose_name=_('Publication Date'))
     stock_count = models.PositiveIntegerField(verbose_name=_('Stock Count'))
+
+    @property
+    def borrowed_count(self):
+        return self.bookborrowhistory_set.filter(returned_date__isnull=True).count()
 
     class Meta:
         verbose_name = _('Book')
