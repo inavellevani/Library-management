@@ -1,38 +1,112 @@
-<!-- book_detail.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ book.title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .book-details {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .book-details p {
+            margin: 10px 0;
+        }
+        .book-details strong {
+            color: #555;
+        }
+        .reservation-form {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .reservation-form button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .reservation-form button:hover {
+            background-color: #45a049;
+        }
+        .reservation-form button.cancel {
+            background-color: #f44336;
+        }
+        .reservation-form button.cancel:hover {
+            background-color: #e53935;
+        }
+        .back-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #888;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .back-button:hover {
+            background-color: #777;
+        }
+    </style>
+    <script>
+        function goBack() {
+            history.back();
+        }
+    </script>
 </head>
 <body>
-    <h1>{{ book.title }}</h1>
-    <p><strong>Author:</strong> {{ book.author.name }}</p>
-    <p><strong>Genre:</strong>
-        {% for genre in book.genre.all %}
-            {{ genre.name }}{% if not forloop.last %}, {% endif %}
-        {% endfor %}
-    </p>
-    <p><strong>Publication Date:</strong> {{ book.publication_date }}</p>
-    <p><strong>Stock Count:</strong> {{ book.stock_count }}</p>
+    <div class="book-details">
+        <h1>{{ book.title }}</h1>
+        <p><strong>Author:</strong> {{ book.author.name }}</p>
+        <p><strong>Genre:</strong>
+            {% for genre in book.genre.all %}
+                {{ genre.name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+        <p><strong>Publication Date:</strong> {{ book.publication_date }}</p>
+        <p><strong>Stock Count:</strong> {{ book.stock_count }}</p>
 
-    <!-- Check if the user has borrowed the book -->
-    {% if user_has_borrowed_book %}
-        <!-- Display cancel reservation button -->
-        <form action="{% url 'book-detail' book.pk %}" method="post">
-            {% csrf_token %}
-            <button type="submit" name="cancel_reservation">Cancel Reservation</button>
-        </form>
-    {% else %}
-        <!-- Display reserve book button if stock count is greater than 0 -->
-        {% if book.stock_count > 0 %}
-            <form action="{% url 'book-detail' book.pk %}" method="post">
-                {% csrf_token %}
-                <button type="submit" name="reserve_book">Reserve Book</button>
-            </form>
-        {% endif %}
-    {% endif %}
+        <div class="reservation-form">
+            <!-- Check if the user has borrowed the book -->
+            {% if user_has_borrowed_book %}
+                <!-- Display cancel reservation button -->
+                <form action="{% url 'book-detail' book.pk %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" name="cancel_reservation" class="cancel">Cancel Reservation</button>
+                </form>
+            {% else %}
+                <!-- Display reserve book button if stock count is greater than 0 -->
+                {% if book.stock_count > 0 %}
+                    <form action="{% url 'book-detail' book.pk %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" name="reserve_book">Reserve Book</button>
+                    </form>
+                {% else %}
+                    <p>Sorry, this book is currently out of stock.</p>
+                {% endif %}
+            {% endif %}
+        </div>
+        <!-- Back button -->
+        <button class="back-button" onclick="goBack()">Back</button>
+    </div>
 </body>
 </html>

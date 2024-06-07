@@ -45,6 +45,7 @@ class BookBorrowHistory(models.Model):
     borrowed_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('Borrowed By'))
     borrowed_date = models.DateField(auto_now_add=True, verbose_name=_('Borrowed Date'))
     returned_date = models.DateField(null=True, blank=True, verbose_name=_('Returned Date'))
+    reservation_date = models.DateField(null=True, blank=True, verbose_name=_('Reservation Date'))
 
     def __str__(self):
         return f"{self.book.title} borrowed by {self.borrowed_by.email}"

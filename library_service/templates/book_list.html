@@ -5,20 +5,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book List</title>
     <style>
-        /* Style for the user profile button */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .search-filter-form {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .search-filter-form form {
+            display: flex;
+            align-items: center;
+        }
+        .search-filter-form input[type="text"],
+        .search-filter-form button {
+            padding: 10px;
+            margin-right: 10px;
+        }
+        .search-filter-form button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .search-filter-form button:hover {
+            background-color: #45a049;
+        }
+        .book-list {
+            list-style: none;
+            padding: 0;
+        }
+        .book-list li {
+            background-color: white;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .book-list h2 {
+            margin: 0 0 10px 0;
+        }
+        .book-list p {
+            margin: 0;
+        }
         .user-profile-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+            display: block;
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .user-profile-button:hover {
+            background-color: #45a049;
+        }
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .pagination .step-links a {
+            padding: 10px;
+            margin: 0 5px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .pagination .step-links a:hover {
+            background-color: #45a049;
+        }
+        .pagination .current {
+            margin: 0 5px;
+            padding: 10px;
         }
     </style>
 </head>
 <body>
     <h1>Book List</h1>
 
+    <div class="search-filter-form">
+        <!-- Search form -->
+        <form method="get">
+            <input type="text" name="search" placeholder="Search books" value="{{ request.GET.search }}">
+            <button type="submit">Search</button>
+        </form>
+
+        <!-- Filter form -->
+        <form method="get">
+            {{ filter.form.as_p }}
+            <button type="submit">Filter</button>
+        </form>
+    </div>
+
     <!-- Display each book in the list -->
-    <ul>
-        {% for book in books %}
+    <ul class="book-list">
+        {% for book in object_list %}
             <li>
                 <!-- Display book details -->
                 <h2><a href="{% url 'book-detail' book.pk %}">{{ book.title }}</a></h2>
@@ -35,8 +126,8 @@
         <div class="pagination">
             <span class="step-links">
                 {% if page_obj.has_previous %}
-                    <a href="?page=1">&laquo; first</a>
-                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                    <a href="?page=1&{{ request.GET.urlencode }}">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}">previous</a>
                 {% endif %}
 
                 <span class="current">
@@ -44,8 +135,8 @@
                 </span>
 
                 {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}">next</a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                    <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}&{{ request.GET.urlencode }}">last &raquo;</a>
                 {% endif %}
             </span>
         </div>

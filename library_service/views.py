@@ -3,15 +3,18 @@ from django.utils import timezone
 from django.views.generic import DetailView, ListView
 from django_filters.views import FilterView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from library_service.filters import BookFilter
 from rest_framework import permissions, status, generics
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from library_service.models import Book, Author, Genre, BookBorrowHistory
 from library_service.serializers import BookSerializer, AuthorSerializer, GenreSerializer, BookBorrowSerializer
 from library_service.utils import (get_top_popular_books, get_top_late_users, get_top_late_returns,
                                    get_borrow_count_last_year)
+from datetime import timedelta
 
 
 class IsEmployeePermission(permissions.BasePermission):
@@ -84,32 +87,93 @@ class TopPopularBooksView(APIView):
     permission_classes = [IsStaffOrAdminUser]
 
     def get(self, request):
+        paginator = PageNumberPagination()
+        paginator.page_size = 10  # Number of books per page
         popular_books = get_top_popular_books()
-        return Response(popular_books)
+        result_page = paginator.paginate_queryset(popular_books, request)
+        return paginator.get_paginated_response(result_page)
 
 
 class BorrowCountLastYearView(APIView):
     permission_classes = [IsStaffOrAdminUser]
 
     def get(self, request):
+        paginator = PageNumberPagination()
+        paginator.page_size = 10  # Number of books per page
         borrow_counts = get_borrow_count_last_year()
-        return Response(borrow_counts)
+        result_page = paginator.paginate_queryset(borrow_counts, request)
+        return paginator.get_paginated_response(result_page)
 
 
 class TopLateReturnsView(APIView):
     permission_classes = [IsStaffOrAdminUser]
 
     def get(self, request):
+        paginator = PageNumberPagination()
+        paginator.page_size = 10  # Number of books per page
         late_returns = get_top_late_returns()
-        return Response(late_returns)
+        result_page = paginator.paginate_queryset(late_returns, request)
+        return paginator.get_paginated_response(result_page)
 
 
 class TopLateUsersView(APIView):
     permission_classes = [IsStaffOrAdminUser]
 
     def get(self, request):
+        paginator = PageNumberPagination()
+        paginator.page_size = 10  # Number of users per page
         late_users = get_top_late_users()
-        return Response(late_users)
+        result_page = paginator.paginate_queryset(late_users, request)
+        return paginator.get_paginated_response(result_page)
+
+
+class BookReservationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        book_id = request.data.get('book')
+        book = Book.objects.filter(id=book_id, stock_count__gt=0).first()
+        if book:
+            reservation_date = timezone.now().date() + timedelta(days=1)
+            reservation_data = {
+                'book': book.id,
+                'borrowed_by': request.user.id,
+                'reservation_date': reservation_date,
+            }
+            serializer = BookBorrowSerializer(data=reservation_data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'error': 'Book is not available for reservation'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class BookBorrowReservationView(generics.CreateAPIView):
+    permission_classes = [IsEmployeePermission]
+    queryset = BookBorrowHistory.objects.all()
+    serializer_class = BookBorrowSerializer
+
+    def create(self, request, *args, **kwargs):
+        book_id = request.data.get('book')
+        book = Book.objects.filter(id=book_id, stock_count__gt=0).first()
+        if book:
+            book.stock_count -= 1
+            book.save()
+            reservation_data = {
+                'book': book.id,
+                'borrowed_by': request.user.id,
+                'borrowed_date': timezone.now().date(),
+                'returned_date': None
+            }
+            serializer = self.get_serializer(data=reservation_data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        else:
+            return Response({'error': 'Book is not available for reservation'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserProfileView(LoginRequiredMixin, ListView):
@@ -121,12 +185,23 @@ class UserProfileView(LoginRequiredMixin, ListView):
         return BookBorrowHistory.objects.filter(borrowed_by=self.request.user, returned_date__isnull=True)
 
 
-class BookListView(FilterView):
+class BookListView(LoginRequiredMixin, FilterView):
     model = Book
     template_name = 'book_list.html'
     context_object_name = 'books'
     paginate_by = 10
     filterset_class = BookFilter
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search_query = self.request.GET.get('search', '')
+        if search_query:
+            queryset = queryset.filter(
+                Q(title__icontains=search_query) |
+                Q(author__name__icontains=search_query) |
+                Q(genre__name__icontains=search_query)
+            )
+        return queryset
 
 
 class BookDetailViewUser(DetailView):
@@ -176,27 +251,4 @@ class BookDetailViewUser(DetailView):
         return redirect('book-detail', pk=book.pk)
 
 
-class BookBorrowReservationView(generics.CreateAPIView):
-    permission_classes = [IsEmployeePermission]
-    queryset = BookBorrowHistory.objects.all()
-    serializer_class = BookBorrowSerializer
 
-    def create(self, request, *args, **kwargs):
-        book_id = request.data.get('book')
-        book = Book.objects.filter(id=book_id, stock_count__gt=0).first()
-        if book:
-            book.stock_count -= 1
-            book.save()
-            reservation_data = {
-                'book': book.id,
-                'borrowed_by': request.user.id,
-                'borrowed_date': timezone.now().date(),
-                'returned_date': None
-            }
-            serializer = self.get_serializer(data=reservation_data)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        else:
-            return Response({'error': 'Book is not available for reservation'}, status=status.HTTP_400_BAD_REQUEST)

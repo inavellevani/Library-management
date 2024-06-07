@@ -26,4 +26,5 @@ class BookSerializer(serializers.ModelSerializer):
 class BookBorrowSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookBorrowHistory
-        fields = '__all__'
+        fields = ('id', 'book', 'borrowed_by', 'borrowed_date', 'returned_date', 'reservation_date')
+        read_only_fields = ('borrowed_date',)

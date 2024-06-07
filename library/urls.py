@@ -24,4 +24,5 @@ urlpatterns = [
     path('', lambda request: redirect('login')),
     path('', include('users.urls'), name='users'),
     path('', include('library_service.urls')),
+
 ]

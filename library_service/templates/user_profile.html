@@ -4,43 +4,99 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .reserved-books {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .reserved-books ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .reserved-books li {
+            margin: 10px 0;
+        }
+        .reserved-books h3 {
+            margin: 0;
+        }
+        .reserved-books a {
+            text-decoration: none;
+            color: #3498db;
+        }
+        .reserved-books a:hover {
+            text-decoration: underline;
+        }
+        .buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .buttons a, .buttons button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .buttons a:hover, .buttons button:hover {
+            background-color: #45a049;
+        }
+        .buttons button.logout {
+            background-color: #f44336;
+        }
+        .buttons button.logout:hover {
+            background-color: #e53935;
+        }
+    </style>
     <script>
-        // Function to navigate back to the profile page after canceling a reservation
-        function goBackToProfile() {
-            window.location.href = "{% url 'user-profile' %}";
-        }
-
-        // Function to refresh the profile page after canceling a reservation
-        function refreshProfile() {
-            window.location.reload();
-        }
+        // Function to handle page navigation to ensure fresh content is loaded
+        window.onpageshow = function(event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        };
     </script>
 </head>
 <body>
     <h1>User Profile</h1>
 
-    <h2>Reserved Books</h2>
+    <div class="reserved-books">
+        <h2>Reserved Books</h2>
 
-    {% if reserved_books %}
-        <ul>
-            {% for reservation in reserved_books %}
-                <li>
-                    <!-- Display only the name of the book and provide link to book detail page -->
-                    <h3><a href="{% url 'book-detail' reservation.book.pk %}">{{ reservation.book.title }}</a></h3>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No reserved books found.</p>
-    {% endif %}
+        {% if reserved_books %}
+            <ul>
+                {% for reservation in reserved_books %}
+                    <li>
+                        <h3><a href="{% url 'book-detail' reservation.book.pk %}">{{ reservation.book.title }}</a></h3>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No reserved books found.</p>
+        {% endif %}
+    </div>
 
-    <!-- Button to navigate to the book list -->
-    <a href="{% url 'book-list' %}">Back to Book List</a>
-
-    <!-- Button to log the user out -->
-    <form action="{% url 'logout' %}" method="post">
-        {% csrf_token %}
-        <button type="submit">Logout</button>
-    </form>
+    <div class="buttons">
+        <a href="{% url 'book-list' %}">Back to Book List</a>
+        <form action="{% url 'logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="logout">Logout</button>
+        </form>
+    </div>
 </body>
 </html>
