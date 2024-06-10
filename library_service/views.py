@@ -225,7 +225,7 @@ class BookDetailViewUser(DetailView):
                 )
                 # Decrease stock count by one
                 book.stock_count -= 1
-                book.save()
+                book.save(update_fields=['stock_count'])
         elif 'cancel_reservation' in request.POST:
             # Cancel reservation
             reservation = BookBorrowHistory.objects.filter(
@@ -238,7 +238,7 @@ class BookDetailViewUser(DetailView):
                 reservation.delete()
                 # Increase stock count by one
                 book.stock_count += 1
-                book.save()
+                book.save(update_fields=['stock_count'])
         return redirect('book-detail', pk=book.pk)
 
 
