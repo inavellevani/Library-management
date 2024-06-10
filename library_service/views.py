@@ -1,11 +1,12 @@
 from django.shortcuts import redirect, get_object_or_404
 from django.utils import timezone
+from datetime import timedelta
 from django.views.generic import DetailView, ListView
 from django_filters.views import FilterView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from library_service.filters import BookFilter
-from rest_framework import permissions, status, generics
+from rest_framework import status, generics
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -14,17 +15,7 @@ from library_service.models import Book, Author, Genre, BookBorrowHistory
 from library_service.serializers import BookSerializer, AuthorSerializer, GenreSerializer, BookBorrowSerializer
 from library_service.utils import (get_top_popular_books, get_top_late_users, get_top_late_returns,
                                    get_borrow_count_last_year)
-from datetime import timedelta
-
-
-class IsEmployeePermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_staff
-
-
-class IsStaffOrAdminUser(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and (request.user.is_staff or request.user.is_superuser))
+from library_service.permissions import IsEmployeePermission, IsStaffOrAdminUser
 
 
 class AuthorCreateView(generics.CreateAPIView):
