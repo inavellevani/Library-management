@@ -36,7 +36,7 @@ class LoginView(View):
             if user.is_staff:
                 return redirect('book-list-create')  # Redirect staff to book-list-create
             else:
-                return redirect('user-profile')  # Redirect regular users to book-list
+                return redirect('book-list')  # Redirect regular users to book-list
         return render(request, 'login.html', {'form': form})
 
 
