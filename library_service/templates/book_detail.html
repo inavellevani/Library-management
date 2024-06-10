@@ -68,8 +68,8 @@
         }
     </style>
     <script>
-        function goBack() {
-            history.back();
+        function redirectToBookList() {
+            window.location.href = "{% url 'book-list' %}";
         }
     </script>
 </head>
@@ -106,7 +106,7 @@
             {% endif %}
         </div>
         <!-- Back button -->
-        <button class="back-button" onclick="goBack()">Back</button>
+        <button class="back-button" onclick="redirectToBookList()">Back</button>
     </div>
 </body>
 </html>
