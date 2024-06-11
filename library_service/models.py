@@ -3,10 +3,6 @@ from django.utils.translation import gettext_lazy as _
 from users.models import CustomUser
 
 
-class Profile(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-
-
 class Author(models.Model):
     name = models.CharField(max_length=100, verbose_name=_('Name'))
     # Add other relevant fields
