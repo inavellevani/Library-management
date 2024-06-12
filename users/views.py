@@ -1,10 +1,9 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout
+from django.contrib.auth import login
 from django.contrib.auth.views import LogoutView
 from django.http import JsonResponse
 from django.views import View
 from users.forms import CustomUserCreationForm, CustomAuthenticationForm
-from django.contrib.auth.models import User
 
 
 class RegisterView(View):
@@ -40,7 +39,7 @@ class LoginView(View):
         return render(request, 'login.html', {'form': form})
 
 
-class LogoutView(LogoutView):
+class Logout(LogoutView):
     def logout_view(self, request):
         if request.method == 'POST':
             request.user.auth_token.delete()
