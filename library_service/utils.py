@@ -1,4 +1,5 @@
-from django.db.models import Count, Q, F, ExpressionWrapper, DateField
+from django.db.models import Count, Q, F, ExpressionWrapper, DateField, OuterRef, Subquery
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 from datetime import timedelta
 from library_service.models import Book, BookBorrowHistory
@@ -23,11 +24,17 @@ def get_borrow_count_last_year():
 
 
 def get_top_late_returns():
-    late_returns = BookBorrowHistory.objects.annotate(
-        days_late=ExpressionWrapper(F('returned_date') - F('borrowed_date'), output_field=DateField())
-    ).filter(
-        days_late__gt=0
-    ).order_by('-days_late').values('book__title', 'days_late')[:100]
+    late_returns_subquery = BookBorrowHistory.objects.filter(
+        returned_date__gt=Coalesce(F('borrowed_date'), timezone.now().date()),
+        book=OuterRef('pk')
+    ).order_by().values('book').annotate(
+        late_count=Count('id')
+    ).values('late_count')
+
+    late_returns = Book.objects.annotate(
+        late_count=Subquery(late_returns_subquery)
+    ).order_by('-late_count').values('title', 'late_count')[:100]
+
     return list(late_returns)
 
 
