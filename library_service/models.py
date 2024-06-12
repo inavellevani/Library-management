@@ -39,7 +39,7 @@ class Book(models.Model):
 class BookBorrowHistory(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE, verbose_name=_('Book'))
     borrowed_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name=_('Borrowed By'))
-    borrowed_date = models.DateField(auto_now_add=True, verbose_name=_('Borrowed Date'))
+    borrowed_date = models.DateField(null=True, verbose_name=_('Borrowed Date'))
     returned_date = models.DateField(null=True, blank=True, verbose_name=_('Returned Date'))
     reservation_date = models.DateField(null=True, blank=True, verbose_name=_('Reservation Date'))
 

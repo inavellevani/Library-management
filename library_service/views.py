@@ -220,7 +220,7 @@ class BookDetailViewUser(DetailView):
                 BookBorrowHistory.objects.create(
                     book=book,
                     borrowed_by=request.user,
-                    borrowed_date=timezone.now().date(),
+                    reservation_date=timezone.now().date(),
                     returned_date=None
                 )
                 # Decrease stock count by one

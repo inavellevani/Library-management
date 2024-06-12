@@ -1,4 +1,7 @@
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.safestring import mark_safe
+
 from library_service.models import Book, Author, Genre, BookBorrowHistory
 
 
@@ -17,6 +20,8 @@ class GenreAdmin(admin.ModelAdmin):
 class BookBorrowHistoryInline(admin.TabularInline):
     model = BookBorrowHistory
     extra = 0
+    fields = ('book', 'borrowed_by', 'borrowed_date', 'returned_date', 'reservation_date')
+    readonly_fields = ('reservation_date',)  # reservation_date should be read-only
 
 
 @admin.register(Book)
@@ -43,3 +48,16 @@ class BookAdmin(admin.ModelAdmin):
     def borrowed_count(self, obj):
         return obj.bookborrowhistory_set.filter(returned_date__isnull=True).count()
     borrowed_count.short_description = 'Borrowed Count'
+
+
+@admin.register(BookBorrowHistory)
+class BookBorrowHistoryAdmin(admin.ModelAdmin):
+    list_display = ('book', 'borrowed_by_link', 'borrowed_date', 'returned_date', 'reservation_date')
+    list_filter = ('book', 'borrowed_by', 'borrowed_date', 'returned_date', 'reservation_date')
+    search_fields = ('book__title', 'borrowed_by__email')
+    fields = ('book', 'borrowed_by', 'borrowed_date', 'returned_date', 'reservation_date')
+
+    def borrowed_by_link(self, obj):
+        url = reverse('admin:users_customuser_change', args=[obj.borrowed_by.id])
+        return mark_safe(f'<a href="{url}">{obj.borrowed_by.email}</a>')
+    borrowed_by_link.short_description = 'Borrowed By'
