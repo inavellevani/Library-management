@@ -1,6 +1,6 @@
 from django.urls import path
 from library_service.views import BookListCreateView, BookDetailView, AuthorCreateView, \
-    GenreCreateView, BookBorrowReservationView, BookListView, BookDetailViewUser, \
+    GenreCreateView, BookBorrowHistoryListCreateView, BookListView, BookDetailViewUser, \
     UserProfileView, TopPopularBooksView, BorrowCountLastYearView, TopLateReturnsView, TopLateUsersView
 
 urlpatterns = [
@@ -8,7 +8,7 @@ urlpatterns = [
     path('api/books/<int:pk>/', BookDetailView.as_view(), name='book-detail'),
     path('api/authors/', AuthorCreateView.as_view(), name='author-create'),
     path('api/genres/', GenreCreateView.as_view(), name='genre-create'),
-    path('api/reservations/', BookBorrowReservationView.as_view(), name='book-reservation'),
+    path('api/reservations/', BookBorrowHistoryListCreateView.as_view(), name='book-reservation'),
     path('api/stats/popular-books/', TopPopularBooksView.as_view(), name='top-popular-books'),
     path('api/stats/borrow-count-last-year/', BorrowCountLastYearView.as_view(), name='borrow-count-last-year'),
     path('api/stats/late-returns/', TopLateReturnsView.as_view(), name='top-late-returns'),

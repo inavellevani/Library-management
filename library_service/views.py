@@ -16,6 +16,7 @@ from library_service.serializers import BookSerializer, AuthorSerializer, GenreS
 from library_service.utils import (get_top_popular_books, get_top_late_users, get_top_late_returns,
                                    get_borrow_count_last_year)
 from library_service.permissions import IsEmployeePermission, IsStaffOrAdminUser
+from users.models import CustomUser
 
 
 class AuthorCreateView(generics.CreateAPIView):
@@ -118,53 +119,37 @@ class TopLateUsersView(APIView):
         return paginator.get_paginated_response(result_page)
 
 
-class BookReservationView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        book_id = request.data.get('book')
-        book = Book.objects.filter(id=book_id, stock_count__gt=0).first()
-        if book:
-            reservation_date = timezone.now().date() + timedelta(days=1)
-            reservation_data = {
-                'book': book.id,
-                'borrowed_by': request.user.id,
-                'reservation_date': reservation_date,
-            }
-            serializer = BookBorrowSerializer(data=reservation_data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({'error': 'Book is not available for reservation'}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class BookBorrowReservationView(generics.CreateAPIView):
-    permission_classes = [IsEmployeePermission]
+class BookBorrowHistoryListCreateView(generics.ListCreateAPIView):
     queryset = BookBorrowHistory.objects.all()
     serializer_class = BookBorrowSerializer
+    permission_classes = [IsStaffOrAdminUser]
 
-    def create(self, request, *args, **kwargs):
-        book_id = request.data.get('book')
+    def perform_create(self, serializer):
+        book_id = self.request.data.get('book')
+        borrowed_by_id = self.request.data.get('borrowed_by')
         book = Book.objects.filter(id=book_id, stock_count__gt=0).first()
-        if book:
+        borrowed_by = CustomUser.objects.filter(id=borrowed_by_id).first()
+
+        if book and borrowed_by:
             book.stock_count -= 1
             book.save()
-            reservation_data = {
-                'book': book.id,
-                'borrowed_by': request.user.id,
-                'borrowed_date': timezone.now().date(),
-                'returned_date': None
-            }
-            serializer = self.get_serializer(data=reservation_data)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            serializer.save(borrowed_by=borrowed_by)
         else:
-            return Response({'error': 'Book is not available for reservation'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Book or user is not available for borrowing'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class BookBorrowHistoryDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = BookBorrowHistory.objects.all()
+    serializer_class = BookBorrowSerializer
+    permission_classes = [IsStaffOrAdminUser]
+
+    def perform_update(self, serializer):
+        instance = self.get_object()
+        book = instance.book
+        if 'returned_date' in self.request.data and self.request.data['returned_date'] is not None:
+            book.stock_count += 1
+            book.save()
+        serializer.save()
 
 
 class UserProfileView(LoginRequiredMixin, ListView):
